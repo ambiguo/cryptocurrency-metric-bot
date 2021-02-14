@@ -1,94 +1,63 @@
 package main
 
 import (
-  "log"
-  "fmt"
-  "math"
-  "strconv"
+	"log"
+	"fmt"
+	"os"
+	"strconv"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/joho/godotenv"
 )
 
 func main() {
 
-  telegramApiKey := "<TELEGRAM API KEY>"
-  nomicsApiKey := "<NOMICS API KEY>"
-  btcWatcherChannelChatId := -0
-  btcPriceChangeAlertChatId := -0
-  minimumMovement := 5.0 // to the alert
-
-  finished := make(chan bool)
-
-  bot, err := tgbotapi.NewBotAPI(telegramApiKey)
+	err := godotenv.Load("app.env")
 
   if err != nil {
-    log.Panic(err)
-  }
- 
-  bot.Debug = false
-
-  log.Printf("Authorized on account %s", bot.Self.UserName)
-
-  nomics := GetNomics("BTC,ETH", nomicsApiKey, "USD", 1800)
-
-  list, err := nomics.GetCurrencyUpdateChannel()
-
-  if err != nil {
-    panic(err)
+    log.Fatal("Error loading app.env file")
   }
 
-  go func(updateList MessageChannel, conversion string) {
+	telegramApiKey := os.Getenv("TELEGRAM_API_KEY") 
+	nomicsApiKey := os.Getenv("NOMICS_API_KEY") 
 
-    for updates := range updateList {
-      for _, update := range updates {
+	criptoWatcherChannelChatId, _ := strconv.ParseInt(os.Getenv("CRIPTO_WATCHER_CHANNEL_CHAT_ID"), 10, 64) 
+	criptoPriceChangeAlertChatId, _ := strconv.ParseInt(os.Getenv("CRIPTO_PRICE_CHANGE_ALERT_CHAT_ID"), 10, 64) 
+	minimumMovementHour := 5.0 // to the alert
+	minimumMovementDayli := 10.0 // to the alert
 
-        actualPrice := cs2f(update.Price)
+	finished := make(chan bool)
 
-        text := fmt.Sprintf("#%s \xF0\x9F\x92\xB0 \nPrice: USD$ %.2f \n", update.ID, actualPrice)
+	lastMessages := make(map[string]Message) 
 
-        btcWatcherChannel := tgbotapi.NewMessage(btcWatcherChannelChatId, text)
+	bot, err := tgbotapi.NewBotAPI(telegramApiKey)
 
-        _, err = bot.Send(btcWatcherChannel)
+	if err != nil {
+		log.Panic(err)
+	}
 
-        if err != nil {
-            finished <- true
-        }
+	log.Printf("Authorized on account %s", bot.Self.UserName)
 
-        priceChange := cs2f(update.OneHour.PriceChange) 
-        lastPrice := 0.0
+	nomics := GetNomics("BTC,ETH,LINK", nomicsApiKey, "USD", 1800)
 
-        if priceChange < 0 {
-          lastPrice = actualPrice + math.Abs(priceChange)
-        } else { 
-          lastPrice = actualPrice - priceChange
-        }
+	list, err := nomics.GetCurrencyUpdateChannel()
 
-        change := (((lastPrice-actualPrice)/actualPrice) * 100) * -1
+	if err != nil {
+		panic(err)
+	}
 
-        if change > minimumMovement || change < (minimumMovement*-1) {
+	go func(updateList MessageChannel, conversion string) {
+		for updates := range updateList {
+			for _, update := range updates {
+				notifyPrice(update, criptoWatcherChannelChatId, bot, finished)
+				alertVariation(update, minimumMovementHour, minimumMovementDayli, criptoPriceChangeAlertChatId, bot, finished, lastMessages[update.ID])
+				lastMessages[update.ID] = update
+			}
+		}
+	}(list, nomics.Conversion)
 
-          text = fmt.Sprintf("#%s changed %.2f%% in 1 hour from %.2f to %.2f \xE2\x9A\xA0 ", update.ID, change, lastPrice, actualPrice)
+	select {
+	case <-finished:
+		fmt.Println("Ending with error %v", err)
+	}
 
-          btcPriceChangeAlert := tgbotapi.NewMessage(btcPriceChangeAlertChatId, text)
-
-          _, err = bot.Send(btcPriceChangeAlert)
-
-          if err != nil {
-              finished <- true
-          }
-        }
-      }
-	  }
-  }(list, nomics.Conversion)
-
-  select {
-      case <-finished:
-        fmt.Println("Ending with error %v", err)
-  }
-
-}
-
-
-func cs2f(number string) float64 {
-   newnumber, _ := strconv.ParseFloat(number, 64)
-   return math.Round(newnumber*100)/100
 }

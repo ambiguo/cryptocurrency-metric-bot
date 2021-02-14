@@ -56,7 +56,7 @@ func (api *NomicsAPI) GetCurrencyUpdate() ([]Message, error) {
 
   var message []Message 
 
-	err := api.makeRequest("/currencies/ticker?key="+api.ApiKey+ "&ids="+api.Currency+"&interval=1h&convert="+api.Conversion,
+	err := api.makeRequest("/currencies/ticker?key="+api.ApiKey+ "&ids="+api.Currency+"&interval=1h,1d&convert="+api.Conversion,
   &message)
 
 	return message, err

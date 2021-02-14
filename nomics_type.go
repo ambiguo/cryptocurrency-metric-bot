@@ -63,6 +63,23 @@ type Message struct {
 			VolumeChangePct string `json:"volume_change_pct"`
 		} `json:"volume_transparency"`
 	} `json:"1h"`
+	OneD                 struct {
+		PriceChange                   string `json:"price_change"`
+		PriceChangePct                string `json:"price_change_pct"`
+		Volume                        string `json:"volume"`
+		VolumeChange                  string `json:"volume_change"`
+		VolumeChangePct               string `json:"volume_change_pct"`
+		MarketCapChange               string `json:"market_cap_change"`
+		MarketCapChangePct            string `json:"market_cap_change_pct"`
+		TransparentMarketCapChange    string `json:"transparent_market_cap_change"`
+		TransparentMarketCapChangePct string `json:"transparent_market_cap_change_pct"`
+		VolumeTransparency            []struct {
+			Grade           string `json:"grade"`
+			Volume          string `json:"volume"`
+			VolumeChange    string `json:"volume_change"`
+			VolumeChangePct string `json:"volume_change_pct"`
+		} `json:"volume_transparency"`
+	} `json:"1d"`
 }
 
 type MessageChannel <-chan []Message
