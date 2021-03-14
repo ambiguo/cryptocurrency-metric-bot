@@ -50,7 +50,7 @@ func alertVariation(message Message, minimumMovementHour float64, minimumMovemen
 		lastAlertExceed, _, _ = calculateIfExceedLimitAndReturnDifferenceAndLastPrice(
 											 cs2f(lastMessage.Price),
 											 cs2f(lastMessage.OneD.PriceChange), 
-											 minimumMovementHour)
+											 minimumMovementDayli)
 	}
 	
 	exceed, change, lastPrice = calculateIfExceedLimitAndReturnDifferenceAndLastPrice(
