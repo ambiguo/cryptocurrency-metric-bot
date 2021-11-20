@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/go-telegram-bot-api/telegram-bot-api"
+
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 func notifyPrice(message Message, btcWatcherChannelChatId int64, bot *tgbotapi.BotAPI, finished chan bool) {
@@ -22,20 +23,20 @@ func notifyPrice(message Message, btcWatcherChannelChatId int64, bot *tgbotapi.B
 }
 
 func alertVariation(message Message, minimumMovementHour float64, minimumMovementDayli float64, btcPriceChangeAlertChatId int64, bot *tgbotapi.BotAPI, finished chan bool, lastMessage Message) {
-	
+
 	lastAlertExceed := false
 
 	exceed, change, lastPrice := calculateIfExceedLimitAndReturnDifferenceAndLastPrice(
-										 cs2f(message.Price),
-										 cs2f(message.OneHour.PriceChange), 
-										 minimumMovementHour)
+		cs2f(message.Price),
+		cs2f(message.OneHour.PriceChange),
+		minimumMovementHour)
 
 	if exceed {
 
 		text := fmt.Sprintf("#%s changed %.2f%% in 1 hour from %.2f to %.2f \xE2\x9A\xA0 ", message.ID,
-																							 change,
-																							  lastPrice,
-																							   cs2f(message.Price))
+			change,
+			lastPrice,
+			cs2f(message.Price))
 
 		btcPriceChangeAlert := tgbotapi.NewMessage(btcPriceChangeAlertChatId, text)
 
@@ -46,24 +47,24 @@ func alertVariation(message Message, minimumMovementHour float64, minimumMovemen
 		}
 	}
 
-	if lastMessage.ID != "" { //empty
+	if lastMessage.ID != "" {
 		lastAlertExceed, _, _ = calculateIfExceedLimitAndReturnDifferenceAndLastPrice(
-											 cs2f(lastMessage.Price),
-											 cs2f(lastMessage.OneD.PriceChange), 
-											 minimumMovementDayli)
+			cs2f(lastMessage.Price),
+			cs2f(lastMessage.OneD.PriceChange),
+			minimumMovementDayli)
 	}
-	
+
 	exceed, change, lastPrice = calculateIfExceedLimitAndReturnDifferenceAndLastPrice(
-										 cs2f(message.Price),
-										 cs2f(message.OneD.PriceChange), 
-										 minimumMovementDayli)
+		cs2f(message.Price),
+		cs2f(message.OneD.PriceChange),
+		minimumMovementDayli)
 
 	if !lastAlertExceed && exceed {
 
 		text := fmt.Sprintf("#%s changed %.2f%% in 24 hours from %.2f to %.2f \xE2\x9A\xA0 ", message.ID,
-																							 change,
-																							  lastPrice,
-																							   cs2f(message.Price))
+			change,
+			lastPrice,
+			cs2f(message.Price))
 
 		btcPriceChangeAlert := tgbotapi.NewMessage(btcPriceChangeAlertChatId, text)
 

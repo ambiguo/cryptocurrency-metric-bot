@@ -11,19 +11,17 @@ func calculateIfExceedLimitAndReturnDifferenceAndLastPrice(actualPrice, priceCha
 
 	if priceChange < 0 {
 		lastPrice = actualPrice + math.Abs(priceChange)
-	} else { 
+	} else {
 		lastPrice = actualPrice - priceChange
 	}
 
-	change := (((lastPrice-actualPrice)/actualPrice) * 100) * -1
+	change := (((lastPrice - actualPrice) / actualPrice) * 100) * -1
 	exceed := (change > minimumMovement || change < (minimumMovement*-1))
 
 	return exceed, change, lastPrice
 }
 
-
-
 func cs2f(number string) float64 {
 	newnumber, _ := strconv.ParseFloat(number, 64)
-	return math.Round(newnumber*100)/100
+	return math.Round(newnumber*100) / 100
 }

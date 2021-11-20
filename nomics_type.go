@@ -1,24 +1,24 @@
-package main 
+package main
 
 import (
-  "time"
-  "net/http"
+	"net/http"
+	"time"
 )
 
 type NomicsAPI struct {
-  Currency string
-  Conversion string
-  ApiKey string
-  Interval int32
-  Buffer int
-  HttpClient *http.Client
+	Currency   string
+	Conversion string
+	ApiKey     string
+	Interval   int32
+	Buffer     int
+	HttpClient *http.Client
 
-  shutdownConsumer chan interface{}
-  baseUrl string
+	shutdownConsumer chan interface{}
+	baseUrl          string
 }
 
 type Messages struct {
-    Meta []Message
+	Meta []Message
 }
 
 type Message struct {
@@ -45,7 +45,7 @@ type Message struct {
 	Rank                 string    `json:"rank"`
 	RankDelta            string    `json:"rank_delta"`
 	High                 string    `json:"high"`
-	HighTimestamp        time.Time    `json:"high_timestamp"`
+	HighTimestamp        time.Time `json:"high_timestamp"`
 	OneHour              struct {
 		PriceChange                   string `json:"price_change"`
 		PriceChangePct                string `json:"price_change_pct"`
@@ -63,7 +63,7 @@ type Message struct {
 			VolumeChangePct string `json:"volume_change_pct"`
 		} `json:"volume_transparency"`
 	} `json:"1h"`
-	OneD                 struct {
+	OneD struct {
 		PriceChange                   string `json:"price_change"`
 		PriceChangePct                string `json:"price_change_pct"`
 		Volume                        string `json:"volume"`
@@ -83,4 +83,3 @@ type Message struct {
 }
 
 type MessageChannel <-chan []Message
-
